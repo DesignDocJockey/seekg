@@ -2,10 +2,12 @@ namespace SectionNormalization
 {
     using System;
     using System.Collections.Generic;
+    using SectionNormalization.src;
 
     public class Normalizer
     {
         private readonly string manifestPath;
+        private IEnumerable<ManifestRecord> _ManifestRecords;
 
         public Normalizer(string manifestPath)
         {
@@ -23,6 +25,8 @@ namespace SectionNormalization
         public void readManifest() {
             // TODO your code goes here
             Console.WriteLine("Reading from " + manifestPath);
+
+            _ManifestRecords = ManifestParser.ParseManifestFile(manifestPath);
         }
 
         /**
