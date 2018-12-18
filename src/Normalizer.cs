@@ -24,8 +24,8 @@ namespace SectionNormalization
         * * row_name
         */
         public void readManifest() {
-            // TODO your code goes here
             Console.WriteLine("Reading from " + manifestPath);
+            // TODO your code goes here
             _ManifestRecords = ManifestParser.ParseManifestFile(manifestPath).ToList<ManifestRecord>();
         }
 

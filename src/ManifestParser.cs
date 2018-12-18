@@ -17,38 +17,17 @@ namespace SectionNormalization.src
                                         .ToList()
                                         .Skip(1)
                                         .Select(i => ParseLineItemIntoManifestRecord(i));
-                                 ;
             return rawFileContents;
         }
 
         private static ManifestRecord ParseLineItemIntoManifestRecord(string lineRecord) {
-            //section,row,n_section_id,n_row_id,valid
-            //311PL,G,160,6,True
             var lineItem = lineRecord.Split(',');
             var manifestRecord = new ManifestRecord();
 
-            if (lineItem.Length != 5)
-                return manifestRecord;
-
-            //section name
-            if (!string.IsNullOrEmpty(lineItem[0])) {
-                manifestRecord.SectionName = lineItem[0].Trim();
-            } else {
-                manifestRecord.SectionName = string.Empty;
-            }
-
-            //row name
-            if (!string.IsNullOrEmpty(lineItem[1])) {
-                manifestRecord.RowName = lineItem[1].Trim();
-            }
-            else {
-                manifestRecord.RowName = string.Empty;
-            }
-
             //sectionId
-            if (!string.IsNullOrEmpty(lineItem[2]))
+            if (!string.IsNullOrEmpty(lineItem[0]))
             {
-                if (Int32.TryParse(lineItem[2].Trim(), out var sectionId))
+                if (Int32.TryParse(lineItem[0].Trim(), out var sectionId))
                     manifestRecord.SectionId = sectionId;
                 else
                     manifestRecord.SectionId = null;
@@ -58,10 +37,17 @@ namespace SectionNormalization.src
                 manifestRecord.SectionId = null;
             }
 
+            //section name
+            if (!string.IsNullOrEmpty(lineItem[1])) {
+                manifestRecord.SectionName = lineItem[1].Trim();
+            } else {
+                manifestRecord.SectionName = string.Empty;
+            }
+
             //rowId
-            if (!string.IsNullOrEmpty(lineItem[3]))
+            if (!string.IsNullOrEmpty(lineItem[2]))
             {
-                if (Int32.TryParse(lineItem[3].Trim(), out var rowId))
+                if (Int32.TryParse(lineItem[2].Trim(), out var rowId))
                 {
                     manifestRecord.RowId = rowId;
                 }
@@ -73,6 +59,13 @@ namespace SectionNormalization.src
                 manifestRecord.RowId = null;
             }
 
+            //row name
+            if (!string.IsNullOrEmpty(lineItem[3])) {
+                manifestRecord.RowName = lineItem[3].Trim();
+            }
+            else {
+                manifestRecord.RowName = string.Empty;
+            }
 
             return manifestRecord;
         }

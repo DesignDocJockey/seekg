@@ -13,9 +13,15 @@
             var options = new CommandLineOptions();
             CommandLine.Parser.Default.ParseArguments(args, options);
 
+            //TODO::remove later
+            options.Manifest = @"/Users/hwong/dev/seekg/citifield_sections.csv";
+
             var manifest = options.Manifest;
             var normalizer = new Normalizer(manifest);
             normalizer.readManifest();
+
+            //TODO::remove later
+            options.Input = @"/Users/hwong/dev/seekg/samples/metstest.csv";
 
             var input = options.Input;
             var section = options.Section;
