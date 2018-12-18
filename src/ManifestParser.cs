@@ -17,8 +17,7 @@ namespace SectionNormalization.src
                                         .ToList()
                                         .Skip(1)
                                         .Select(i => ParseLineItemIntoManifestRecord(i));
-                                        //.Where(rec => rec.IsValid());
-
+                                 ;
             return rawFileContents;
         }
 
@@ -33,9 +32,9 @@ namespace SectionNormalization.src
 
             //section name
             if (!string.IsNullOrEmpty(lineItem[0])) {
-                manifestRecord.Section = lineItem[0].Trim();
+                manifestRecord.SectionName = lineItem[0].Trim();
             } else {
-                manifestRecord.Section = string.Empty;
+                manifestRecord.SectionName = string.Empty;
             }
 
             //row name
@@ -47,37 +46,33 @@ namespace SectionNormalization.src
             }
 
             //sectionId
-            if (!string.IsNullOrEmpty(lineItem[2])) {
+            if (!string.IsNullOrEmpty(lineItem[2]))
+            {
                 if (Int32.TryParse(lineItem[2].Trim(), out var sectionId))
                     manifestRecord.SectionId = sectionId;
                 else
                     manifestRecord.SectionId = null;
             }
             else
+            {
                 manifestRecord.SectionId = null;
+            }
 
             //rowId
-            if (!string.IsNullOrEmpty(lineItem[3])) 
+            if (!string.IsNullOrEmpty(lineItem[3]))
             {
-                if (Int32.TryParse(lineItem[3].Trim(), out var rowId)) {
+                if (Int32.TryParse(lineItem[3].Trim(), out var rowId))
+                {
                     manifestRecord.RowId = rowId;
                 }
                 else
                     manifestRecord.RowId = null;
             }
             else
+            {
                 manifestRecord.RowId = null;
+            }
 
-            //valid
-            if (!string.IsNullOrEmpty(lineItem[4])) {
-                if (Boolean.TryParse(lineItem[4].Trim(), out var validFlag))
-                    manifestRecord.Valid = validFlag;
-                else
-                    manifestRecord.Valid = false;
-            }
-            else {
-                manifestRecord.Valid = false;
-            }
 
             return manifestRecord;
         }
