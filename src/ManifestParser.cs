@@ -8,7 +8,7 @@ namespace SectionNormalization.src
 {
     public static class ManifestParser
     {
-        public static IEnumerable<ManifestRecord> ParseManifestFile(string manifestFile)
+        public static List<ManifestRecord> ParseManifestFile(string manifestFile)
         {
             if (!File.Exists(manifestFile))
                 throw new FileNotFoundException($"File: {manifestFile} was not found.");
@@ -17,7 +17,7 @@ namespace SectionNormalization.src
                                         .ToList()
                                         .Skip(1)
                                         .Select(i => ParseLineItemIntoManifestRecord(i));
-            return rawFileContents;
+            return rawFileContents.ToList();
         }
 
         private static ManifestRecord ParseLineItemIntoManifestRecord(string lineRecord) {
@@ -29,14 +29,8 @@ namespace SectionNormalization.src
             {
                 if (Int32.TryParse(lineItem[0].Trim(), out var sectionId))
                     manifestRecord.SectionId = sectionId;
-                else
-                    manifestRecord.SectionId = null;
             }
-            else
-            {
-                manifestRecord.SectionId = null;
-            }
-
+   
             //section name
             if (!string.IsNullOrEmpty(lineItem[1])) {
                 manifestRecord.SectionName = lineItem[1].Trim();

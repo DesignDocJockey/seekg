@@ -3,12 +3,14 @@ namespace SectionNormalization
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
     using SectionNormalization.src;
 
     public class Normalizer
     {
         private readonly string manifestPath;
         private List<ManifestRecord> _ManifestRecords;
+        private Dictionary<int, string> _StadiumSectionIdsToSectionNameMapping;
 
         public Normalizer(string manifestPath)
         {
@@ -27,6 +29,33 @@ namespace SectionNormalization
             Console.WriteLine("Reading from " + manifestPath);
             // TODO your code goes here
             _ManifestRecords = ManifestParser.ParseManifestFile(manifestPath).ToList<ManifestRecord>();
+
+            //TODO::populate a dictionary 
+            //_StadiumSectionIds = _ManifestRecords
+            //                        .Select(i => i.SectionId)
+            //                        .Distinct()
+            //                        .ToList();
+        }
+
+        private string LookUpSectionName(string sectionInput) {
+            bool isNumericId = int.TryParse(sectionInput, out var sectionName);
+            if (isNumericId)
+                return sectionName.ToString();
+            else {
+                //check to see if the string contains any digits that we can extract out as the sectionId
+                if (sectionInput.Any(c => char.IsDigit(c))) 
+                {
+                    var id = new StringBuilder();
+                    foreach (var chararacter in sectionInput.ToCharArray()) {
+                        if (char.IsDigit(chararacter))
+                            id.Append(chararacter);
+                    }
+                    sectionName = int.Parse(id.ToString());
+                    return sectionName.ToString();
+                }
+            }
+
+            return sectionInput;
         }
 
         /**
@@ -48,17 +77,44 @@ namespace SectionNormalization
             //r.rowId = 112;
             //r.valid = true;
 
-            // TODO your code goes here
-            var bFound = _ManifestRecords.Any(i => i.SectionName.ToLower().Contains(section.ToLower())
-                            && i.RowName.ToLower().Contains(row.ToLower()));
-            if(bFound) 
+            //TODO::add your code here
+
+            var sectionName = LookUpSectionName(section);
+
+            //look for section id based off the section name
+            var bFoundSectionName = _ManifestRecords.Any(i => i.SectionName.ToLower().Equals(sectionName));
+            if (bFoundSectionName)
             {
-                var result = _ManifestRecords
-                                    .Where(i => i.SectionName.ToLower().Contains(section.ToLower())
-                                            && i.RowName.ToLower().Contains(row.ToLower()))
-                                    .FirstOrDefault();
-                r.rowId = result.RowId.Value;
-                r.sectionId = result.SectionId.Value;
+                var sectionId = _ManifestRecords
+                                        .Where(i => i.SectionName.ToLower().Equals(sectionName))
+                                        .Select(j => j.SectionId)
+                                        .FirstOrDefault();
+
+                //TODO::do the row analysis
+                var rowInfo = _ManifestRecords
+                                        .Where(i => i.SectionId == sectionId)
+                                        .Select(j => new {
+                                            j.RowId,
+                                            j.RowName
+                                        }).ToList();
+
+                //if no rowInfo check if it is a suite?
+
+
+                if (rowInfo.Any())
+                {
+      
+                    var rowId = rowInfo.Where(k => k.RowName.ToLower().Equals(row.Trim().ToLower()))
+                                       .Select(l => l.RowId)
+                                       .FirstOrDefault();
+                }
+               
+
+                //TODO::do some analysis on the provided row
+
+
+                r.rowId = rowId.Value;
+                r.sectionId = sectionId;
                 r.valid = true;
             }
             else {
