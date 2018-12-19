@@ -58,9 +58,12 @@ namespace SectionNormalization
             return sectionInput;
         }
 
-        private bool IsSectionASuite(string sectionName) {
-            return sectionName.Trim().ToLower().Contains("suite");
-        }
+        private bool IsSectionASuite(ManifestRecord manifestRecord) =>
+              (manifestRecord.SectionId > 0
+                        && !string.IsNullOrEmpty(manifestRecord.SectionName)
+                        && manifestRecord.RowId == null
+                        && string.IsNullOrEmpty(manifestRecord.RowName));
+       
 
         private List<ManifestRecord> GetManifestRecordsForSectionId(int sectionId) => _ManifestRecords.Where(i => i.SectionId == sectionId).ToList();
   
@@ -88,10 +91,11 @@ namespace SectionNormalization
 
             var sectionName = LookUpSectionName(section);
 
-            //look for section id based off the section name
+            //look for section id based off the provided section name
             var bFoundSectionName = _ManifestRecords.Any(i => i.SectionName.ToLower().Equals(sectionName));
             if (bFoundSectionName)
             {
+                //locate the sectionId
                 var sectionId = _ManifestRecords
                                         .Where(i => i.SectionName.ToLower().Equals(sectionName))
                                         .Select(j => j.SectionId)
@@ -99,13 +103,12 @@ namespace SectionNormalization
 
                 var manifestRecordsForSectionId = GetManifestRecordsForSectionId(sectionId);
 
-                //if the row is empty, check to see if it is a suite
-                if (string.IsNullOrEmpty(row))
+                //if the row is empty or contains the word suite, check to see if it is a suite
+                if (string.IsNullOrEmpty(row) || row.ToLower().Trim().Contains("suite"))
                 {
                     foreach (var rec in manifestRecordsForSectionId)
                     {
-                        if (IsSectionASuite(rec.SectionName))
-                        {
+                        if (IsSectionASuite(rec)) {
                             r.sectionId = sectionId;
                             r.valid = true;
                             break;
@@ -118,14 +121,14 @@ namespace SectionNormalization
                     var bHasRows = manifestRecordsForSectionId.Any(i => i.RowName.ToLower().Equals(row.Trim().ToLower()));
                     if (bHasRows)
                     {
-                        var rowMatches = manifestRecordsForSectionId
+                        var rowsInSectionId = manifestRecordsForSectionId
                                      .Where(k => k.RowName.ToLower().Equals(row.Trim().ToLower()));
                            
-                        if (rowMatches.Count() > 1) { 
+                        if (rowsInSectionId.Count() > 1) { 
                             //TODO::scenerio where there are multiple records for the row
                         }
 
-                        var rowId = rowMatches.FirstOrDefault().RowId;
+                        var rowId = rowsInSectionId.FirstOrDefault().RowId;
                         if (rowId.HasValue) {
                             r.rowId = rowId.Value;
                             r.sectionId = sectionId;
