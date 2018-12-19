@@ -43,7 +43,7 @@ namespace SectionNormalization
                 return sectionName.ToString();
             else {
                 //check to see if the string contains any digits that we can extract out as the sectionId
-                if (sectionInput.Any(c => char.IsDigit(c))) 
+                if (sectionInput.Any(c => char.IsDigit(c)))
                 {
                     var id = new StringBuilder();
                     foreach (var chararacter in sectionInput.ToCharArray()) {
@@ -63,10 +63,15 @@ namespace SectionNormalization
                         && !string.IsNullOrEmpty(manifestRecord.SectionName)
                         && manifestRecord.RowId == null
                         && string.IsNullOrEmpty(manifestRecord.RowName));
-       
+
 
         private List<ManifestRecord> GetManifestRecordsForSectionId(int sectionId) => _ManifestRecords.Where(i => i.SectionId == sectionId).ToList();
-  
+
+        private NormalizationResult InvalidateRecordWithNoMatch() => new NormalizationResult() { valid = false };
+
+        private NormalizationResult InvalidateRecordWithMatchingSectionId(int sectionId) => new NormalizationResult() { valid = false, sectionId = sectionId };
+
+        private NormalizationResult ValidMatchingRecord(int sectionId, int rowId = 0) => new NormalizationResult() { valid = true, sectionId = sectionId, rowId = rowId };
 
         /**
         * normalize a single (section, row) input
@@ -82,10 +87,7 @@ namespace SectionNormalization
         public NormalizationResult Normalize(string section, string row)
         {
             // initialize return data structure
-            NormalizationResult r = new NormalizationResult();
-            //r.sectionId = 112312;
-            //r.rowId = 112;
-            //r.valid = true;
+            NormalizationResult r = null;
 
             //TODO::add your code here
 
@@ -109,8 +111,7 @@ namespace SectionNormalization
                     foreach (var rec in manifestRecordsForSectionId)
                     {
                         if (IsSectionASuite(rec)) {
-                            r.sectionId = sectionId;
-                            r.valid = true;
+                            r = ValidMatchingRecord(sectionId);
                             break;
                         }
                     }
@@ -124,28 +125,20 @@ namespace SectionNormalization
                         var rowsInSectionId = manifestRecordsForSectionId
                                      .Where(k => k.RowName.ToLower().Equals(row.Trim().ToLower()));
                            
-                        if (rowsInSectionId.Count() > 1) { 
-                            //TODO::scenerio where there are multiple records for the row
-                        }
-
                         var rowId = rowsInSectionId.FirstOrDefault().RowId;
                         if (rowId.HasValue) {
-                            r.rowId = rowId.Value;
-                            r.sectionId = sectionId;
-                            r.valid = true;
+                            r = ValidMatchingRecord(sectionId, rowId.Value);
                         }
                         else {
-                            r.sectionId = sectionId;
-                            r.valid = false;
+                            r = InvalidateRecordWithMatchingSectionId(sectionId);
                         }
                     } else {
-                        r.sectionId = sectionId;
-                        r.valid = false;
+                        r = InvalidateRecordWithMatchingSectionId(sectionId);
                     }
                 }
             }
             else {
-                r.valid = false;
+                r = InvalidateRecordWithNoMatch();
             }
 
             return r;
