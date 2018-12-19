@@ -58,6 +58,13 @@ namespace SectionNormalization
             return sectionInput;
         }
 
+        private bool IsSectionASuite(string sectionName) {
+            return sectionName.Trim().ToLower().Contains("suite");
+        }
+
+        private List<ManifestRecord> GetManifestRecordsForSectionId(int sectionId) => _ManifestRecords.Where(i => i.SectionId == sectionId).ToList();
+  
+
         /**
         * normalize a single (section, row) input
         * Given a (Section, Row) input, returns (section_id, row_id, valid)
@@ -90,32 +97,49 @@ namespace SectionNormalization
                                         .Select(j => j.SectionId)
                                         .FirstOrDefault();
 
-                //TODO::do the row analysis
-                var rowInfo = _ManifestRecords
-                                        .Where(i => i.SectionId == sectionId)
-                                        .Select(j => new {
-                                            j.RowId,
-                                            j.RowName
-                                        }).ToList();
+                var manifestRecordsForSectionId = GetManifestRecordsForSectionId(sectionId);
 
-                //if no rowInfo check if it is a suite?
-
-
-                if (rowInfo.Any())
+                //if the row is empty, check to see if it is a suite
+                if (string.IsNullOrEmpty(row))
                 {
-      
-                    var rowId = rowInfo.Where(k => k.RowName.ToLower().Equals(row.Trim().ToLower()))
-                                       .Select(l => l.RowId)
-                                       .FirstOrDefault();
+                    foreach (var rec in manifestRecordsForSectionId)
+                    {
+                        if (IsSectionASuite(rec.SectionName))
+                        {
+                            r.sectionId = sectionId;
+                            r.valid = true;
+                            break;
+                        }
+                    }
                 }
-               
+                else
+                {
+                    //do the row analysis
+                    var bHasRows = manifestRecordsForSectionId.Any(i => i.RowName.ToLower().Equals(row.Trim().ToLower()));
+                    if (bHasRows)
+                    {
+                        var rowMatches = manifestRecordsForSectionId
+                                     .Where(k => k.RowName.ToLower().Equals(row.Trim().ToLower()));
+                           
+                        if (rowMatches.Count() > 1) { 
+                            //TODO::scenerio where there are multiple records for the row
+                        }
 
-                //TODO::do some analysis on the provided row
-
-
-                r.rowId = rowId.Value;
-                r.sectionId = sectionId;
-                r.valid = true;
+                        var rowId = rowMatches.FirstOrDefault().RowId;
+                        if (rowId.HasValue) {
+                            r.rowId = rowId.Value;
+                            r.sectionId = sectionId;
+                            r.valid = true;
+                        }
+                        else {
+                            r.sectionId = sectionId;
+                            r.valid = false;
+                        }
+                    } else {
+                        r.sectionId = sectionId;
+                        r.valid = false;
+                    }
+                }
             }
             else {
                 r.valid = false;
