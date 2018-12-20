@@ -37,7 +37,10 @@ namespace SectionNormalization
             //                        .ToList();
         }
 
-        private string LookUpSectionName(string sectionInput) {
+        private string LookUpSectionName(string sectionInput)
+        {
+            //TODO::check to see if the section is a suite
+
             bool isNumericId = int.TryParse(sectionInput, out var sectionName);
             if (isNumericId)
                 return sectionName.ToString();
@@ -57,13 +60,6 @@ namespace SectionNormalization
 
             return sectionInput;
         }
-
-        private bool IsSectionASuite(ManifestRecord manifestRecord) =>
-              (manifestRecord.SectionId > 0
-                        && !string.IsNullOrEmpty(manifestRecord.SectionName)
-                        && manifestRecord.RowId == null
-                        && string.IsNullOrEmpty(manifestRecord.RowName));
-
 
         private List<ManifestRecord> GetManifestRecordsForSectionId(int sectionId) => _ManifestRecords.Where(i => i.SectionId == sectionId).ToList();
 
@@ -94,47 +90,61 @@ namespace SectionNormalization
             var sectionName = LookUpSectionName(section);
 
             //look for section id based off the provided section name
-            var bFoundSectionName = _ManifestRecords.Any(i => i.SectionName.ToLower().Equals(sectionName));
-            if (bFoundSectionName)
+            var bFoundSectionName = _ManifestRecords.Any(i => i.SectionName.ToLower().Equals(sectionName.ToLower()));
+            var bContains = _ManifestRecords.Any(i => i.SectionName.ToLower().Contains(sectionName.ToLower()));
+
+            if (bFoundSectionName || bContains)
             {
-                //locate the sectionId
-                var sectionId = _ManifestRecords
-                                        .Where(i => i.SectionName.ToLower().Equals(sectionName))
-                                        .Select(j => j.SectionId)
-                                        .FirstOrDefault();
+                int sectionId = 0;
 
-                var manifestRecordsForSectionId = GetManifestRecordsForSectionId(sectionId);
-
-                //if the row is empty or contains the word suite, check to see if it is a suite
-                if (string.IsNullOrEmpty(row) || row.ToLower().Trim().Contains("suite"))
+                if (bContains)
                 {
-                    foreach (var rec in manifestRecordsForSectionId)
-                    {
-                        if (IsSectionASuite(rec)) {
-                            r = ValidMatchingRecord(sectionId);
-                            break;
-                        }
+                    var possibleRecords = _ManifestRecords
+                                              .Where(i => i.SectionName.ToLower().Contains(sectionName.ToLower())
+                                                     && i.RowName.ToLower().Contains(row.ToLower()) )
+                                              .Distinct()
+                                              .Select(i => i.SectionId)
+                                              .Distinct()
+                                              .ToList();
+
+                    if (possibleRecords.Count() > 1) {
+                        //incorporate the provided row to try to find the section
+                        var additionalFilter = _ManifestRecords.Where(i => i.SectionName.ToLower().Contains(sectionName.ToLower()) 
+                                                       && i.RowName.ToLower().Contains(row.ToLower())
+                                                ).ToList();
+                                           
                     }
+                    else
+                        sectionId = possibleRecords.FirstOrDefault();
                 }
                 else
                 {
-                    //do the row analysis
-                    var bHasRows = manifestRecordsForSectionId.Any(i => i.RowName.ToLower().Equals(row.Trim().ToLower()));
-                    if (bHasRows)
-                    {
-                        var rowsInSectionId = manifestRecordsForSectionId
-                                     .Where(k => k.RowName.ToLower().Equals(row.Trim().ToLower()));
-                           
-                        var rowId = rowsInSectionId.FirstOrDefault().RowId;
-                        if (rowId.HasValue) {
-                            r = ValidMatchingRecord(sectionId, rowId.Value);
-                        }
-                        else {
-                            r = InvalidateRecordWithMatchingSectionId(sectionId);
-                        }
-                    } else {
+                    //locate the sectionId
+                    sectionId = _ManifestRecords
+                                            .Where(i => i.SectionName.ToLower().Equals(sectionName.ToLower()))
+                                            .Select(j => j.SectionId)
+                                            .FirstOrDefault();
+                }
+
+                var manifestRecordsForSectionId = GetManifestRecordsForSectionId(sectionId);
+
+                //do the row analysis
+                var bHasRows = manifestRecordsForSectionId.Any(i => i.RowName.ToLower().Equals(row.Trim().ToLower()));
+                if (bHasRows)
+                {
+                    var rowsInSectionId = manifestRecordsForSectionId
+                                 .Where(k => k.RowName.ToLower().Equals(row.Trim().ToLower()));
+
+                    var rowId = rowsInSectionId.FirstOrDefault().RowId;
+                    if (rowId.HasValue) {
+                        r = ValidMatchingRecord(sectionId, rowId.Value);
+                    }
+                    else {
                         r = InvalidateRecordWithMatchingSectionId(sectionId);
                     }
+                }
+                else {
+                    r = InvalidateRecordWithMatchingSectionId(sectionId);
                 }
             }
             else {
