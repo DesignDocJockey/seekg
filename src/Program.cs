@@ -14,16 +14,16 @@
             CommandLine.Parser.Default.ParseArguments(args, options);
 
             //TODO::remove later
-            options.Manifest = @"/Users/hwong/dev/seekg/citifield_sections.csv";
-            //@C:\Dev\sectionnorm-SGO\sectionnorm-SGO\csharp\citifield_sections.csv;
+            options.Manifest = @"C:\Dev\sectionnorm-SGO\sectionnorm-SGO\csharp\citifield_sections.csv";
+            //@"/Users/hwong/dev/seekg/citifield_sections.csv";
 
             var manifest = options.Manifest;
             var normalizer = new Normalizer(manifest);
             normalizer.readManifest();
 
             //TODO::remove later
-            options.Input = @"/Users/hwong/dev/seekg/samples/metstest.csv";
-            // @"C:\Dev\sectionnorm-SGO\sectionnorm-SGO\csharp\samples\metstest.csv";
+            options.Input = @"C:\Dev\sectionnorm-SGO\sectionnorm-SGO\csharp\samples\metstest.csv";
+            //@"/Users/hwong/dev/seekg/samples/metstest.csv";  ;
 
 
             var input = options.Input;
@@ -32,7 +32,7 @@
 
             if (!string.IsNullOrEmpty(input))
             {
-                var samples = readCSVInput(input);
+                var samples = readCSVInput(input).ToList<SampleRecord>();
                 normalizer.Normalize(samples);
                 outputSamples(samples);
             }
