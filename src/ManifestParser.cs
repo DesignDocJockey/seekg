@@ -61,6 +61,9 @@ namespace SectionNormalization.src
                 manifestRecord.RowName = string.Empty;
             }
 
+            if (manifestRecord.SectionId > 0 && (!manifestRecord.RowId.HasValue && string.IsNullOrEmpty(manifestRecord.RowName)))
+                manifestRecord.IsSuite = true;
+
             return manifestRecord;
         }
     }

@@ -14,17 +14,20 @@
             CommandLine.Parser.Default.ParseArguments(args, options);
 
             //TODO::remove later
-            options.Manifest = @"C:\Dev\sectionnorm-SGO\sectionnorm-SGO\csharp\citifield_sections.csv";
-            //@"/Users/hwong/dev/seekg/citifield_sections.csv";
+            options.Manifest = @"C:\Dev\sectionnorm-SGO\sectionnorm-SGO\csharp\dodgerstadium_sections.csv";
+            //@" / Users/hwong/dev/seekg/citifield_sections.csv";
+            //@"C:\Dev\sectionnorm-SGO\sectionnorm-SGO\csharp\dodgerstadium_sections.csv";
+            //@"C:\Dev\sectionnorm-SGO\sectionnorm-SGO\csharp\citifield_sections.csv";
 
             var manifest = options.Manifest;
             var normalizer = new Normalizer(manifest);
             normalizer.readManifest();
 
             //TODO::remove later
-            options.Input = @"C:\Dev\sectionnorm-SGO\sectionnorm-SGO\csharp\samples\metstest.csv";
-            //@"/Users/hwong/dev/seekg/samples/metstest.csv";  ;
-
+            options.Input = @"C:\Dev\sectionnorm-SGO\sectionnorm-SGO\csharp\samples\dodgertest.csv";
+            //@"/Users/hwong/dev/seekg/samples/metstest.csv";
+            //@"C:\Dev\sectionnorm-SGO\sectionnorm-SGO\csharp\samples\dodgertest.csv";
+            //@"C:\Dev\sectionnorm-SGO\sectionnorm-SGO\csharp\samples\metstest.csv";
 
             var input = options.Input;
             var section = options.Section;
