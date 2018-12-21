@@ -61,6 +61,7 @@ namespace SectionNormalization.src
                 manifestRecord.RowName = string.Empty;
             }
 
+            //check to see if the record is suite
             if (manifestRecord.SectionId > 0 && (!manifestRecord.RowId.HasValue && string.IsNullOrEmpty(manifestRecord.RowName)))
                 manifestRecord.IsSuite = true;
 

@@ -11,6 +11,5 @@ namespace SectionNormalization.src
         public int? RowId { get; set; }
         public string RowName { get; set; }
         public bool IsSuite { get; set; } = false;
-       
     }
 }

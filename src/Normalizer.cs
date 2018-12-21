@@ -11,7 +11,6 @@ namespace SectionNormalization
     {
         private readonly string manifestPath;
         private List<ManifestRecord> _ManifestRecords;
-        private Dictionary<int, string> _StadiumSectionIdsToSectionNameMapping;
 
         public Normalizer(string manifestPath)
         {
@@ -30,18 +29,10 @@ namespace SectionNormalization
             Console.WriteLine("Reading from " + manifestPath);
             // TODO your code goes here
             _ManifestRecords = ManifestParser.ParseManifestFile(manifestPath).ToList<ManifestRecord>();
-
-            //TODO::populate a dictionary 
-            //_StadiumSectionIds = _ManifestRecords
-            //                        .Select(i => i.SectionId)
-            //                        .Distinct()
-            //                        .ToList();
         }
 
         private string LookUpSectionName(string sectionInput)
         {
-            //TODO::check to see if the section is a suite
-
             bool isNumericId = int.TryParse(sectionInput, out var sectionName);
             if (isNumericId)
                 return sectionName.ToString();
