@@ -82,14 +82,14 @@ namespace SectionNormalization
             var sectionName = LookUpSectionName(section);
 
             //look for section id based off the provided section name
-            var bFoundSectionName = _ManifestRecords.Any(i => i.SectionName.ToLower().Equals(sectionName.ToLower()));
-            var bContains = _ManifestRecords.Any(i => i.SectionName.ToLower().Contains(sectionName.ToLower()));
+            var bDirectMatchOnSectionName = _ManifestRecords.Any(i => i.SectionName.ToLower().Equals(sectionName.ToLower()));
+            var bContainsComparision = _ManifestRecords.Any(i => i.SectionName.ToLower().Contains(sectionName.ToLower()));
 
-            if (bFoundSectionName || bContains)
+            if (bDirectMatchOnSectionName || bContainsComparision)
             {
                 int sectionId = 0;
 
-                if (bContains)
+                if (bContainsComparision)
                 {
                     var possibleRecords = _ManifestRecords
                                               .Where(i => i.SectionName.ToLower().Contains(sectionName.ToLower())
