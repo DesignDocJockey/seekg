@@ -4,6 +4,7 @@ namespace SectionNormalization
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Text.RegularExpressions;
     using SectionNormalization.src;
 
     public class Normalizer
@@ -105,13 +106,20 @@ namespace SectionNormalization
                                               .Distinct()
                                               .Select(i => i.SectionId)
                                               .Distinct()
+                                              .OrderByDescending(k => k)
                                               .ToList();
 
                     if (possibleRecords.Count() > 1) {
                         //incorporate the provided row to try to find the section
-                        var additionalFilter = _ManifestRecords.Where(i => i.SectionName.ToLower().Contains(sectionName.ToLower()) 
-                                                       && i.RowName.ToLower().Contains(row.ToLower())
-                                                ).ToList();
+                        foreach (var possibleSectionId in possibleRecords) {
+                            var possibleSection = _ManifestRecords.Where(i => i.SectionId == possibleSectionId).FirstOrDefault();
+                            var isMatch = Regex.IsMatch(possibleSection.SectionName, string.Format(@"\b{0}\b", Regex.Escape(sectionName)));
+
+                            if (isMatch) {
+                                sectionId = possibleSection.SectionId;
+                                break;
+                            } 
+                        }
                                            
                     }
                     else
